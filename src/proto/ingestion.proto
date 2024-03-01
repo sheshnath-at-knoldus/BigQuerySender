@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+// Message sent to the device manager / brokers
+message BrokerMessage {
+    int64 delivery_id = 1;
+    IngestionHeader header = 2;
+    bytes payload = 3;
+    bytes raw = 4;
+    int64 size_hint = 5;
+}
+
+message IngestionHeader {
+    string device_id = 1;
+    BrokerType broker_type = 2;
+    ContentType content_type = 3;
+    string message_id = 4;
+}
+
+enum ContentType {
+    TCP_DANLAW = 0;
+    UDP_DANLAW = 1;
+    JSON = 2;
+    BOSCH_JSON = 3;
+}
+
+message BrokerMessageResponseGeneric {
+    int64 delivery_id = 1;
+    ConfirmStatus status = 2;
+    oneof value {
+        bool tcpPending = 3;
+        FailureReason reason = 4;
+        bytes payload = 5;
+    };
+}
+
+enum ConfirmStatus {
+    SUCCESS = 0;
+    FAIL = 1;
+}
+
+message FailureReason {
+    FailureType failure_type = 1;
+    string reason = 2;
+}
+
+enum FailureType {
+    INFO = 0;
+    WARN = 1;
+}
+
+enum BrokerType {
+    DANLAW_TCP = 0;
+    DANLAW_UDP = 1;
+    HTTP = 2;
+    BOSCH = 3;
+}

@@ -1,0 +1,25 @@
+[package]
+name = "BigQuery-Sender"
+version = "0.1.0"
+edition = "2021"
+
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rdkafka = "0.36.2"
+serde = { version = "1.0.196",features = ["derive"] }
+serde_json = "1.0.113"
+dotenv = "0.15.0"
+gcp-bigquery-client = "0.18.0"
+tokio = { version = "1.0.0", features = ["full"] }
+yup-oauth2 = "8.3"
+time = "0.3.34"
+protobuf = { version = "3.3.0",features = ["with-bytes"] }
+chrono = "0.4.34"
+prost = "0.12.3"
+log = "0.4.20"
+
+[build-dependencies]
+protobuf-codegen = "3.3.0"

@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+
+
+message EventData {
+    EventHeader header = 1;
+    ValueMap body = 2;
+}
+
+message EventHeader {
+    string tenant_id = 1;
+    string device_id = 2;
+    string message_id = 3;
+    repeated string tags = 4;
+    int64 ingestion_timestamp = 5;
+    BrokerType broker_type = 6;
+    string event_id = 7;
+}
+
+enum BrokerType {
+    DANLAW_TCP = 0;
+    DANLAW_UDP = 1;
+    HTTP = 2;
+    BOSCH = 3;
+}
+
+message EventValue {
+    oneof value {
+        string string_v = 1;
+        int64 int_v = 2;
+        double double_v = 3;
+        bool boolean_v = 4;
+        string date_time_v = 5; // timestamp in ISO 8601 format
+        int64 duration_v = 6;   // duration in millis
+        ValueVector vector_v = 7;
+        ValueMap map_v = 8;
+    }
+}
+
+message ValueVector {
+    repeated EventValue values = 1;
+}
+
+message ValueMap {
+    map<string, EventValue> values = 1;
+}
