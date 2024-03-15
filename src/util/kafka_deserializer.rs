@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use crate::model;
 use crate::events::{
     event_value, BrokerType, EventData, EventHeader, EventValue, ValueMap, ValueVector,
@@ -8,23 +9,35 @@ use protobuf::well_known_types::struct_::Value;
 use protobuf::{CodedInputStream, Message, MessageField, SpecialFields, UnknownFields};
 use serde::ser::SerializeStruct;
 use serde::{Serialize, Serializer};
-use serde_json::json;
+use serde_json::{from_slice, json};
 use std::collections::HashMap;
 use std::fmt::{Debug, Display};
+use std::str::from_utf8;
 use log::log;
-use crate::ingestion::BrokerMessage;
-
+use serde::__private::from_utf8_lossy;
+use serde::de::Unexpected::Str;
+use crate::ingestion::{BrokerMessage, IngestionHeader};
+fn process_data(data :Cow<str>) -> serde_json::Value {
+    let data =data.as_ref();
+    let json_start= data.find('{').unwrap();
+    let json_end=data.rfind('}').unwrap();
+    let json= &data[json_start..=json_end];
+    let data : serde_json::Value = serde_json::from_str(json).expect("");
+    data
+}
 pub(crate) fn deserializer(payload: &[u8]) -> serde_json::Value {
-    // Parse the payload into EventData
-    let mut input_stream = CodedInputStream::from_bytes(payload);
-    let mut event_data = EventData::new();
-        event_data
-        .merge_from(&mut input_stream)
-        .expect("error while parsing bytes from Kafka");
+    //
+    // let mut input_stream = CodedInputStream::from_bytes(payload);
+    // let mut event_data = EventData::new();
+    //     event_data
+    //     .merge_from(&mut input_stream)
+    //     .expect("error while parsing bytes from Kafka");
+    // let json_data = parse_event_data(event_data.clone());
+    // //println!("json_data{}",json_data.clone());
+    // json_data
 
-    let json_data = parse_event_data(event_data.clone());
-    //println!("json_data{}",json_data.clone());
-    json_data
+    let cow_Str=from_utf8_lossy(payload);
+    process_data(cow_Str)
 }
 
 fn parse_event_data(event_data: EventData) -> serde_json::Value {
@@ -37,7 +50,6 @@ fn parse_event_data(event_data: EventData) -> serde_json::Value {
     let tags = event_data.header.tags.clone();
     let ingestion_timestamp = event_data.header.ingestion_timestamp.clone();
     let broker_type = event_data.header.broker_type.unwrap();
-
     let body = parse_value_map(event_data.body.unwrap());
     let header_json = json!( {
         "event_id": event_id,

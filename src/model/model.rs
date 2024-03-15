@@ -1,10 +1,34 @@
 use chrono::{DateTime, Utc};
 use protobuf::well_known_types::duration::Duration;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Map;
 use std::collections::HashMap;
 use std::string::String;
+use sqlx::types::Text;
+#[derive(Debug)]
+pub struct Object {
+   pub cloudJson_auth_provider_x509_cert_url: String,
+   pub cloudJson_auth_uri: String,
+   pub cloudJson_client_email: String,
+   pub cloudJson_client_id: String,
+   pub cloudJson_client_x509_cert_url: String,
+   pub cloudJson_private_key_id: String,
+   pub cloudJson_project_id: String,
+   pub cloudJson_token_uri: String,
+   pub cloudJson_type: String,
+   pub instanceId: String,
+   pub tableName: String
+}
 
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct Destinations{
+    pub  tenant_id:String,
+    pub name:String ,
+    pub type_ :String,
+    pub properties:serde_json::Value,
+    pub confidential_properties :serde_json::Value,
+
+}
 #[derive(Serialize)]
 pub(crate) struct BQTable {
     pub message_id: String,

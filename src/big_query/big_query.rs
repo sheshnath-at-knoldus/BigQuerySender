@@ -8,6 +8,7 @@ use gcp_bigquery_client::model::table_schema::TableSchema;
 use gcp_bigquery_client::Client;
 use serde_json::Map;
 use std::collections::HashMap;
+use log::{debug, info};
 
 pub(crate) async fn insert_into_big_query(
     mut insert_request: TableDataInsertAllRequest,
@@ -47,6 +48,7 @@ fn create_schema(json_data: serde_json::Value) -> Vec<TableFieldSchema> {
     let json_value = json_data;
     let mut flat_schema = HashMap::new();
     flatten_json_for_schema("", json_value, &mut flat_schema);
+
     flat_schema
         .into_iter()
         .map(|(key, value)| TableFieldSchema {
@@ -164,6 +166,7 @@ pub(crate) async fn create_data_set(
 
 async fn create_table(dataset: Dataset, big_query_client :Client, table_id :&String,value :serde_json::Value) {
     let table_schema= create_schema(value);
+  //  debug!("table_Schema{:#?}",table_schema.clone());
     dataset
         .create_table(
             &big_query_client,
@@ -187,19 +190,19 @@ async fn update_table_schema(big_query_client :Client, project_id:&String, datas
     let mut updated_table_schema = existing_table_schema.clone();
 
     let new_fields = create_schema(value.clone());
-
+   // println!("schema \n{:#?}",new_fields);
     // Check if any new fields are found
     let mut new_fields_found = false;
 
     for new_field in new_fields {
         if !existing_table_schema.iter().any(|field| field.name == new_field.name) {
-            println!("New field found: {:?}", new_field.clone());
+            info!("New field found: {:?}", new_field.clone());
             updated_table_schema.push(new_field);
             new_fields_found = true;
         }
     }
     if new_fields_found {
-        println!("New column(s) added");
+        info!("New column(s) added");
 
         // Update the table schema only if new fields are found
         table.schema.fields = Some(updated_table_schema);
